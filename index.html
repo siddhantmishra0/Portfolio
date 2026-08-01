@@ -11,6 +11,9 @@
   <meta name="theme-color" content="#0d0d0d" />
 
   <link rel="icon" type="image/svg+xml" href="new.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -44,29 +47,40 @@
         <h3>About Me</h3>
         <p>Software Engineer — Full-Stack. B.Tech from TCET Mumbai.</p>
       </section>
-      <!-- Original static sections can remain empty or populated minimally since the JS terminal handles the visible UI -->
     </main>
   </div>
 
-  <div id="terminal-screen">
-    <div id="output"></div>
+  <div class="desktop-bg">
+    <div class="mac-window">
+      <div class="title-bar">
+        <div class="window-controls">
+          <span class="control close"></span>
+          <span class="control minimize"></span>
+          <span class="control maximize"></span>
+        </div>
+        <div class="window-title">siddhant@macbook-pro:~</div>
+      </div>
+      <div id="terminal-screen">
+        <div id="output"></div>
 
-    <div class="chips-row">
-      <button class="chip" data-cmd="about">[about]</button>
-      <button class="chip" data-cmd="projects">[projects]</button>
-      <button class="chip" data-cmd="skills">[skills]</button>
-      <button class="chip" data-cmd="experience">[experience]</button>
-      <button class="chip" data-cmd="achievements">[achievements]</button>
-      <button class="chip" data-cmd="socials">[socials]</button>
-      <button class="chip" data-cmd="whoami">[whoami]</button>
-      <button class="chip" data-cmd="resume">[resume]</button>
-      <button class="chip" data-cmd="clear">[clear]</button>
-    </div>
+        <div class="chips-row">
+          <button class="chip" data-cmd="about">about</button>
+          <button class="chip" data-cmd="projects">projects</button>
+          <button class="chip" data-cmd="skills">skills</button>
+          <button class="chip" data-cmd="experience">experience</button>
+          <button class="chip" data-cmd="achievements">achievements</button>
+          <button class="chip" data-cmd="socials">socials</button>
+          <button class="chip" data-cmd="whoami">whoami</button>
+          <button class="chip" data-cmd="resume">resume</button>
+          <button class="chip" data-cmd="clear">clear</button>
+        </div>
 
-    <div class="input-row">
-      <span class="prompt">guest@siddhant.dev:~$&nbsp;</span>
-      <label for="cmd-input" class="sr-only">Terminal command input</label>
-      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" autofocus aria-label="Terminal command input" />
+        <div class="input-row">
+          <span class="prompt">guest@macbook-pro <span class="c-blue">~</span> %&nbsp;</span>
+          <label for="cmd-input" class="sr-only">Terminal command input</label>
+          <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" autofocus aria-label="Terminal command input" />
+        </div>
+      </div>
     </div>
   </div>
 

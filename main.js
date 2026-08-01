@@ -106,22 +106,31 @@ class Terminal {
     this.isProcessing = false;
 
     this.COMMANDS = {
-      help:         () => this.printHelp(),
-      about:        () => this.printAbout(),
-      projects:     () => this.printProjects(),
-      skills:       () => this.printSkills(),
-      experience:   () => this.printExperience(),
-      achievements: () => this.printAchievements(),
-      socials:      () => this.printSocials(),
-      whoami:       () => this.printWhoami(),
-      resume:       () => this.openResume(),
-      clear:        () => this.clear(),
-      agent:        () => this.runAgentEasterEgg(),
+      help:         async () => await this.printHelp(),
+      about:        async () => await this.printAbout(),
+      projects:     async () => await this.printProjects(),
+      skills:       async () => await this.printSkills(),
+      experience:   async () => await this.printExperience(),
+      achievements: async () => await this.printAchievements(),
+      socials:      async () => await this.printSocials(),
+      whoami:       async () => await this.printWhoami(),
+      resume:       async () => await this.openResume(),
+      clear:        async () => await this.clear(),
+      agent:        async () => await this.runAgentEasterEgg(),
     };
 
     this.bindKeys();
-    this.printBanner();
-    this.printHelp();
+    this.init();
+  }
+
+  async init() {
+    this.isProcessing = true;
+    this.input.disabled = true;
+    await this.printBanner();
+    await this.printHelp();
+    this.isProcessing = false;
+    this.input.disabled = false;
+    this.input.focus();
   }
 
   bindKeys() {
@@ -151,10 +160,11 @@ class Terminal {
         if (matches.length === 1) {
           this.input.value = matches[0];
         } else if (matches.length > 1) {
-          this.print('');
-          this.printCmd(val);
-          this.print(`  ${span(matches.join('   '), 'c-green')}`);
-          this.print('');
+          // Sync print for autocomplete to avoid weird UX
+          this.printSync('');
+          this.printSyncCmd(val);
+          this.printSync(`  ${span(matches.join('   '), 'c-green')}`);
+          this.printSync('');
         }
       }
     });
@@ -165,42 +175,93 @@ class Terminal {
     });
   }
 
-  print(html) {
+  async typeNode(sourceNode, targetNode, speed) {
+    if (sourceNode.nodeType === Node.TEXT_NODE) {
+      const text = sourceNode.textContent;
+      let currentText = '';
+      const textNode = document.createTextNode('');
+      targetNode.appendChild(textNode);
+      for (let i = 0; i < text.length; i++) {
+        currentText += text[i];
+        textNode.textContent = currentText;
+        this.output.scrollTop = this.output.scrollHeight;
+        if (speed > 0) await new Promise(r => setTimeout(r, speed));
+      }
+    } else if (sourceNode.nodeType === Node.ELEMENT_NODE) {
+      const clone = sourceNode.cloneNode(false);
+      targetNode.appendChild(clone);
+      for (const child of sourceNode.childNodes) {
+        await this.typeNode(child, clone, speed);
+      }
+    }
+  }
+
+  async print(html, speed = 2) {
+    const div = document.createElement('div');
+    this.output.appendChild(div);
+    if (speed === 0) {
+      div.innerHTML = html;
+      this.output.scrollTop = this.output.scrollHeight;
+      return;
+    }
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    for (const child of temp.childNodes) {
+      await this.typeNode(child, div, speed);
+    }
+    this.output.scrollTop = this.output.scrollHeight;
+  }
+
+  printSync(html) {
     const div = document.createElement('div');
     div.innerHTML = html;
     this.output.appendChild(div);
     this.output.scrollTop = this.output.scrollHeight;
   }
 
-  printCmd(text) {
-    this.print(`${span('guest@siddhant.dev:~$', 'c-dim')} ${span(text, 'c-white')}`);
+  printSyncCmd(text) {
+    this.printSync(`${span('guest@macbook-pro', 'c-dim')} ${span('~', 'c-blue')} ${span('%', 'c-dim')} ${span(text, 'c-white')}`);
   }
 
-  execute(raw) {
+  async printCmd(text) {
+    await this.print(`${span('guest@macbook-pro', 'c-dim')} ${span('~', 'c-blue')} ${span('%', 'c-dim')} ${span(text, 'c-white')}`, 0);
+  }
+
+  async execute(raw) {
     if (!raw) return;
     this.history.unshift(raw);
     this.histIdx = -1;
     
+    this.isProcessing = true;
+    this.input.disabled = true;
+
     const safeRaw = escapeHTML(raw);
-    this.printCmd(safeRaw);
+    await this.printCmd(safeRaw);
     
     const cmd = raw.toLowerCase();
     if (this.COMMANDS[cmd]) {
-      this.COMMANDS[cmd]();
+      await this.COMMANDS[cmd]();
     } else {
-      this.print(`\n${span('command not found:', 'c-red')} ${safeRaw} — type ${span('help', 'c-yellow')} for available commands\n`);
+      await this.print(`\n${span('zsh: command not found:', 'c-red')} ${safeRaw} — type ${span('help', 'c-yellow')} for available commands\n`, 5);
     }
+
+    this.isProcessing = false;
+    this.input.disabled = false;
+    this.input.focus();
   }
 
-  clear() { this.output.innerHTML = ''; }
-
-  printBanner() {
-    this.print(`<pre class="ascii-art">${ASCII}</pre>`);
-    this.print(`${span('  Siddhant Mishra', 'c-cyan')} — Software Engineer & Full-Stack Developer`);
-    this.print(`  ${span('Type ', 'c-dim')}${span('help', 'c-yellow')}${span(' or click the chips below to navigate.', 'c-dim')}\n`);
+  async clear() { 
+    this.output.innerHTML = ''; 
   }
 
-  printHelp() {
+  async printBanner() {
+    await this.print(`<pre class="ascii-art">${ASCII}</pre>`, 0);
+    await this.print(`  Welcome to ${span('macOS', 'c-dim')} (Darwin Kernel Version 22.5.0)`);
+    await this.print(`  ${span('Siddhant Mishra', 'c-cyan')} — Software Engineer & Full-Stack Developer`);
+    await this.print(`  ${span('Type ', 'c-dim')}${span('help', 'c-yellow')}${span(' or click the chips below to navigate.', 'c-dim')}\n`, 5);
+  }
+
+  async printHelp() {
     const cmds = [
       ['about',        'who am I'],
       ['projects',     'things I have built'],
@@ -211,107 +272,99 @@ class Terminal {
       ['whoami',       'one-line identity'],
       ['resume',       'open resume PDF'],
       ['clear',        'clear the terminal'],
-      ['agent',        '???'],
     ];
-    this.print(`\n${span('available commands:', 'c-yellow')}\n`);
-    cmds.forEach(([cmd, desc]) => {
-      this.print(`  ${span(cmd.padEnd(14), 'c-green')}${span('— ' + desc, 'c-dim')}`);
-    });
-    this.print('');
+    await this.print(`\n${span('available commands:', 'c-yellow')}\n`, 2);
+    for (const [cmd, desc] of cmds) {
+      await this.print(`  ${span(cmd.padEnd(14), 'c-green')}${span('— ' + desc, 'c-dim')}`, 1);
+    }
+    await this.print('', 0);
   }
 
-  printAbout() {
-    this.print(`\n${span('// about', 'c-yellow')}\n`);
-    ABOUT.split('\n').forEach(line => this.print(`  ${line}`));
-    this.print('');
+  async printAbout() {
+    await this.print(`\n${span('// about', 'c-yellow')}\n`, 0);
+    const lines = ABOUT.split('\n');
+    for (const line of lines) {
+      await this.print(`  ${line}`, 2);
+    }
+    await this.print('', 0);
   }
 
-  printProjects() {
-    this.print(`\n${span('// projects', 'c-yellow')}\n`);
-    const startScrollPos = this.output.scrollHeight;
-    PROJECTS.forEach((p, i) => {
+  async printProjects() {
+    await this.print(`\n${span('// projects', 'c-yellow')}\n`, 0);
+    for (let i = 0; i < PROJECTS.length; i++) {
+      const p = PROJECTS[i];
       const num = String(i + 1).padStart(2, '0');
-      this.print(`  ${span('[' + num + ']', 'c-cyan')} ${span(p.name, 'c-green')}`);
-      this.print(`<div class="indent-7">       ${span(p.tech, 'c-yellow')}</div>`);
-      this.print(`<div class="indent-7">       ${span(p.description, 'c-white')}</div>`);
-      this.print(`<div class="indent-7">       <a href="${p.link}" target="_blank" rel="noopener noreferrer">${p.link}</a></div>`);
-      this.print('');
-      this.output.scrollTop = startScrollPos;
-    });
+      await this.print(`  ${span('[' + num + ']', 'c-cyan')} ${span(p.name, 'c-green')}`, 2);
+      await this.print(`<div class="indent-7">       ${span(p.tech, 'c-yellow')}</div>`, 2);
+      await this.print(`<div class="indent-7">       ${span(p.description, 'c-white')}</div>`, 1);
+      await this.print(`<div class="indent-7">       <a href="${p.link}" target="_blank" rel="noopener noreferrer">${p.link}</a></div>`, 0);
+      await this.print('', 0);
+    }
   }
 
-  printSkills() {
-    this.print(`\n${span('// skills', 'c-yellow')}\n`);
-    SKILLS.forEach(s => {
-      this.print(`<div class="indent-15">  ${span(s.category.padEnd(12), 'c-cyan')} ${span(s.items, 'c-white')}</div>`);
-    });
-    this.print('');
+  async printSkills() {
+    await this.print(`\n${span('// skills', 'c-yellow')}\n`, 0);
+    for (const s of SKILLS) {
+      await this.print(`<div class="indent-15">  ${span(s.category.padEnd(12), 'c-cyan')} ${span(s.items, 'c-white')}</div>`, 2);
+    }
+    await this.print('', 0);
   }
 
-  printExperience() {
-    this.print(`\n${span('// experience', 'c-yellow')}\n`);
-    EXPERIENCE.forEach(e => {
-      this.print(`  ${span(e.role, 'c-green')} ${span('@', 'c-dim')} ${span(e.company, 'c-cyan')}`);
-      this.print(`  ${span(e.period, 'c-dim')}\n`);
-      e.bullets.forEach(b => this.print(`<div class="indent-4">  ${span('›', 'c-dim')} ${span(b, 'c-white')}</div>`));
-      this.print('');
-    });
+  async printExperience() {
+    await this.print(`\n${span('// experience', 'c-yellow')}\n`, 0);
+    for (const e of EXPERIENCE) {
+      await this.print(`  ${span(e.role, 'c-green')} ${span('@', 'c-dim')} ${span(e.company, 'c-cyan')}`, 2);
+      await this.print(`  ${span(e.period, 'c-dim')}\n`, 1);
+      for (const b of e.bullets) {
+        await this.print(`<div class="indent-4">  ${span('›', 'c-dim')} ${span(b, 'c-white')}</div>`, 1);
+      }
+      await this.print('', 0);
+    }
   }
 
-  printAchievements() {
-    this.print(`\n${span('// achievements', 'c-yellow')}\n`);
-    ACHIEVEMENTS.forEach(a => {
-      this.print(`<div class="indent-4">  ${span('★', 'c-magenta')} ${span(a, 'c-white')}</div>`);
-    });
-    this.print('');
+  async printAchievements() {
+    await this.print(`\n${span('// achievements', 'c-yellow')}\n`, 0);
+    for (const a of ACHIEVEMENTS) {
+      await this.print(`<div class="indent-4">  ${span('★', 'c-magenta')} ${span(a, 'c-white')}</div>`, 2);
+    }
+    await this.print('', 0);
   }
 
-  printSocials() {
-    this.print(`\n${span('// socials', 'c-yellow')}\n`);
-    this.print(`<div class="indent-13">  ${span('github'.padEnd(10), 'c-cyan')} <a href="https://github.com/${SOCIAL.github}" target="_blank" rel="noopener noreferrer">github.com/${SOCIAL.github}</a></div>`);
-    this.print(`<div class="indent-13">  ${span('linkedin'.padEnd(10), 'c-cyan')} <a href="https://linkedin.com/in/${SOCIAL.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/${SOCIAL.linkedin}</a></div>`);
-    this.print(`<div class="indent-13">  ${span('email'.padEnd(10), 'c-cyan')} <a href="mailto:${SOCIAL.email}">${SOCIAL.email}</a></div>`);
-    this.print('');
+  async printSocials() {
+    await this.print(`\n${span('// socials', 'c-yellow')}\n`, 0);
+    await this.print(`<div class="indent-13">  ${span('github'.padEnd(10), 'c-cyan')} <a href="https://github.com/${SOCIAL.github}" target="_blank" rel="noopener noreferrer">github.com/${SOCIAL.github}</a></div>`, 2);
+    await this.print(`<div class="indent-13">  ${span('linkedin'.padEnd(10), 'c-cyan')} <a href="https://linkedin.com/in/${SOCIAL.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/${SOCIAL.linkedin}</a></div>`, 2);
+    await this.print(`<div class="indent-13">  ${span('email'.padEnd(10), 'c-cyan')} <a href="mailto:${SOCIAL.email}">${SOCIAL.email}</a></div>`, 2);
+    await this.print('', 0);
   }
 
-  printWhoami() {
-    this.print(`\n  ${span('siddhant mishra', 'c-cyan')} — software engineer, full-stack developer\n`);
+  async printWhoami() {
+    await this.print(`\n  ${span('siddhant mishra', 'c-cyan')} — software engineer, full-stack developer\n`, 5);
   }
 
-  openResume() {
-    this.print(`\n${span('opening resume...', 'c-green')}\n`);
+  async openResume() {
+    await this.print(`\n${span('opening resume...', 'c-green')}\n`, 5);
     const w = window.open(RESUME_URL, '_blank');
     if (!w) {
-      this.print(`${span('blocked by browser. visit directly:', 'c-red')} <a href="${RESUME_URL}" target="_blank" rel="noopener noreferrer">${RESUME_URL}</a>\n`);
+      await this.print(`${span('blocked by browser. visit directly:', 'c-red')} <a href="${RESUME_URL}" target="_blank" rel="noopener noreferrer">${RESUME_URL}</a>\n`, 0);
     }
   }
 
   async runAgentEasterEgg() {
-    this.isProcessing = true;
-    this.input.disabled = true;
-
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const logs = [
-      span('[Agent] Initializing independent tool-calling engine...', 'c-dim'),
-      span('[Agent] Mounting Docker containers... Done.', 'c-dim'),
-      span('[Agent] Scanning repository for full-stack capabilities...', 'c-dim'),
-      span('[Agent] Analyzing TCARP reinforcement learning metrics...', 'c-dim'),
-      span('[Agent] Validating hackathon wins... Confirmed.', 'c-dim'),
+      span('[System] Elevating privileges...', 'c-dim'),
+      span('[System] Bypassing firewall... Done.', 'c-dim'),
+      span('[System] Scanning for vulnerabilities...', 'c-dim'),
     ];
 
-    this.print('');
+    await this.print('', 0);
     for (const log of logs) {
       await sleep(500 + Math.random() * 500);
-      this.print(`  ${log}`);
+      await this.print(`  ${log}`, 10);
     }
     await sleep(800);
-    this.print(`\n  ${span('[Agent Result] Analysis complete. Candidate Siddhant Mishra exceeds parameters. Recommendation: IMMEDIATE HIRE.', 'c-green')}\n`);
-    await sleep(500);
-    this.print(`  ${span('[System] Releasing resources... returning control to guest.', 'c-dim')}\n`);
-
-    this.isProcessing = false;
-    this.input.disabled = false;
-    this.input.focus();
+    await this.print(`\n  ${span('Just kidding! Have a great day.', 'c-green')}\n`, 5);
   }
 }
 
