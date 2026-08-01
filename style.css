@@ -1,0 +1,155 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #00ff41;
+  --cyan: #00ffff;
+  --yellow: #ffff00;
+  --magenta: #ff00ff;
+  --red: #ff4444;
+  --dim: #888;
+  --white: #e0e0e0;
+  --bg: #0d0d0d;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--green);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  html, body {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+#terminal-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  #terminal-screen {
+    height: auto;
+    min-height: 100svh;
+    padding: 12px;
+  }
+}
+
+#output {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+  padding-bottom: 8px;
+}
+
+#output::-webkit-scrollbar { width: 4px; }
+#output::-webkit-scrollbar-track { background: var(--bg); }
+#output::-webkit-scrollbar-thumb { background: var(--green); }
+
+.ascii-art {
+  font-size: 10px;
+  margin: 8px 0;
+  color: var(--green);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+@media (max-width: 600px) {
+  .ascii-art {
+    font-size: 5px;
+  }
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px dashed var(--dim);
+  margin-top: 10px;
+  flex-shrink: 0;
+}
+
+.chip {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--dim);
+  font-family: 'Courier New', Courier, monospace;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  outline: none;
+  min-height: 32px;
+}
+
+.chip:hover, .chip:focus {
+  color: var(--green);
+  border-color: var(--green);
+  background: rgba(0, 255, 65, 0.08);
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.prompt { color: var(--green); white-space: nowrap; }
+
+#cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--green);
+  font-family: inherit;
+  font-size: 13px;
+  caret-color: var(--green);
+  font-size: max(13px, 16px);
+  aria-label: "Terminal command input";
+}
+
+@media (min-width: 601px) {
+  #cmd-input {
+    font-size: 13px;
+  }
+}
+
+.c-green   { color: var(--green); }
+.c-cyan    { color: var(--cyan); }
+.c-yellow  { color: var(--yellow); }
+.c-red     { color: var(--red); }
+.c-white   { color: var(--white); }
+.c-dim     { color: var(--dim); }
+.c-magenta { color: var(--magenta); }
+
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--cyan); }
+
+.indent-4  { padding-left: 4ch;  text-indent: -4ch; }
+.indent-7  { padding-left: 7ch;  text-indent: -7ch; }
+.indent-13 { padding-left: 13ch; text-indent: -13ch; }
+.indent-15 { padding-left: 15ch; text-indent: -15ch; }

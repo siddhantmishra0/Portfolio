@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Siddhant Mishra | Terminal Portfolio</title>
+
+  <meta name="description" content="Siddhant Mishra - Software Engineer & Full-Stack Developer." />
+  <meta name="keywords" content="Siddhant Mishra, Software Engineer, Full-Stack Developer, React.js, Node.js, MERN" />
+  <meta name="author" content="Siddhant Mishra" />
+  <meta name="theme-color" content="#0d0d0d" />
+
+  <link rel="icon" type="image/svg+xml" href="new.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Siddhant Mishra",
+    "jobTitle": "Software Engineer — Full-Stack",
+    "url": "https://siddhant-portfolio.vercel.app",
+    "email": "mishrasiddhant2605@gmail.com",
+    "sameAs": [
+      "https://github.com/siddhantmishra0",
+      "https://linkedin.com/in/siddhantmishra0"
+    ],
+    "knowsAbout": [
+      "Software Engineering", "React.js", "Node.js", "TypeScript",
+      "MongoDB", "Express.js", "SQL", "Full-Stack Development"
+    ]
+  }
+  </script>
+  <div class="sr-only">
+    <header>
+      <h1>Siddhant Mishra</h1>
+      <h2>Software Engineer &amp; Full-Stack Developer</h2>
+      <p>Mumbai, India | B.Tech, TCET Mumbai</p>
+    </header>
+    <main>
+      <section id="about">
+        <h3>About Me</h3>
+        <p>Software Engineer — Full-Stack. B.Tech from TCET Mumbai.</p>
+      </section>
+      <!-- Original static sections can remain empty or populated minimally since the JS terminal handles the visible UI -->
+    </main>
+  </div>
+
+  <div id="terminal-screen">
+    <div id="output"></div>
+
+    <div class="chips-row">
+      <button class="chip" data-cmd="about">[about]</button>
+      <button class="chip" data-cmd="projects">[projects]</button>
+      <button class="chip" data-cmd="skills">[skills]</button>
+      <button class="chip" data-cmd="experience">[experience]</button>
+      <button class="chip" data-cmd="achievements">[achievements]</button>
+      <button class="chip" data-cmd="socials">[socials]</button>
+      <button class="chip" data-cmd="whoami">[whoami]</button>
+      <button class="chip" data-cmd="resume">[resume]</button>
+      <button class="chip" data-cmd="clear">[clear]</button>
+    </div>
+
+    <div class="input-row">
+      <span class="prompt">guest@siddhant.dev:~$&nbsp;</span>
+      <label for="cmd-input" class="sr-only">Terminal command input</label>
+      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" autofocus aria-label="Terminal command input" />
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
